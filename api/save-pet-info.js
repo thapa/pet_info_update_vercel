@@ -20,8 +20,8 @@ export default async function handler(req, res) {
           id: $customerId,
           metafields: [
             {
-              namespace: "pets",
-              key: "name",
+              namespace: "custom",
+              key: "pet_info",
               type: "single_line_text_field",
               value: $petName
             }
