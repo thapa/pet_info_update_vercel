@@ -1,17 +1,8 @@
 {
-  "name": "pet_info_save_node",
-  "module": "index.ts",
+  "name": "pet-metafield-api",
+  "version": "1.0.0",
   "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
-  },
   "dependencies": {
-    "axios": "^1.13.2",
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0"
+    "axios": "^1.6.0"
   }
 }

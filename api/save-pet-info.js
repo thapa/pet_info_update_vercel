@@ -8,9 +8,9 @@ export default async function handler(req, res) {
   const { customer_id, pet_name } = req.body;
 
   if (!customer_id || !pet_name) {
-    return res
-      .status(400)
-      .json({ error: "Missing customer_id or pet_name" });
+    return res.status(400).json({
+      error: "Missing customer_id or pet_name",
+    });
   }
 
   try {
@@ -20,9 +20,9 @@ export default async function handler(req, res) {
           id: $customerId,
           metafields: [
             {
-              namespace: "pets"
-              key: "name"
-              type: "single_line_text_field"
+              namespace: "pets",
+              key: "name",
+              type: "single_line_text_field",
               value: $petName
             }
           ]
@@ -53,6 +53,9 @@ export default async function handler(req, res) {
     return res.status(200).json(response.data);
   } catch (error) {
     console.error(error.response?.data || error);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({
+      error: "Server error",
+      details: error.response?.data,
+    });
   }
 }
