@@ -14,8 +14,49 @@ export default async function handler(req, res) {
   }
 
   try {
+    const customerId = `gid://shopify/Customer/${customer_id}`;
+    const shopifyUrl = `https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/2024-10/graphql.json`;
+    const headers = {
+      "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN,
+      "Content-Type": "application/json",
+    };
+
+    const metafieldQuery = `
+      query getCustomerPetInfo($customerId: ID!) {
+        customer(id: $customerId) {
+          metafield(namespace: "custom", key: "pet_info") {
+            id
+            value
+          }
+        }
+      }
+    `;
+
+    const existingMetafieldResponse = await axios.post(
+      shopifyUrl,
+      {
+        query: metafieldQuery,
+        variables: { customerId },
+      },
+      { headers }
+    );
+
+    if (existingMetafieldResponse.data.errors?.length) {
+      throw new Error(
+        existingMetafieldResponse.data.errors
+          .map((error) => error.message)
+          .join(", ")
+      );
+    }
+
+    const existingValue =
+      existingMetafieldResponse.data?.data?.customer?.metafield?.value?.trim() || "";
+    const newPetInfoValue = existingValue
+      ? `${existingValue}, ${pet_name}`
+      : pet_name;
+
     const mutation = `
-      mutation updateCustomerMeta($customerId: ID!, $petName: String!) {
+      mutation updateCustomerMeta($customerId: ID!, $petInfoValue: String!) {
         customerUpdate(input: {
           id: $customerId,
           metafields: [
@@ -23,7 +64,7 @@ export default async function handler(req, res) {
               namespace: "custom",
               key: "pet_info",
               type: "single_line_text_field",
-              value: $petName
+              value: $petInfoValue
             }
           ]
         }) {
@@ -34,20 +75,15 @@ export default async function handler(req, res) {
     `;
 
     const response = await axios.post(
-      `https://${process.env.SHOPIFY_STORE_DOMAIN}/admin/api/2024-10/graphql.json`,
+      shopifyUrl,
       {
         query: mutation,
         variables: {
-          customerId: `gid://shopify/Customer/${customer_id}`,
-          petName: pet_name,
+          customerId,
+          petInfoValue: newPetInfoValue,
         },
       },
-      {
-        headers: {
-          "X-Shopify-Access-Token": process.env.SHOPIFY_ACCESS_TOKEN,
-          "Content-Type": "application/json",
-        },
-      }
+      { headers }
     );
 
     return res.status(200).json(response.data);
